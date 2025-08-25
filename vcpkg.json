@@ -1,6 +1,5 @@
 {
     "dependencies": [
-        "magic-enum"
+        "glfw3"
     ]
-
 }
