@@ -1,19 +1,29 @@
-cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
-
-project(FluidSimulation VERSION 0.1.0 LANGUAGES CXX C)
+cmake_minimum_required(VERSION 3.20)
+project(FluidSimulation VERSION 0.1.0 LANGUAGES CXX C CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
-                                                    
+set(CMAKE_CUDA_STANDARD 17)
+
+# Поиск пакетов через vcpkg
+find_package(Eigen3 REQUIRED)
 find_package(glfw3 REQUIRED)
-find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glm REQUIRED)
 
+# OpenGL ищем через системный CMake
+find_package(OpenGL REQUIRED)
+
+# Настройка CUDA
+enable_language(CUDA)
+find_package(CUDAToolkit REQUIRED)
+
 add_executable(Simulation src/main.cpp)
 
-target_link_libraries(Simulation  
+target_link_libraries(Simulation
+    CUDA::cudart  
     glfw3
     GLEW::GLEW
     glm
     OpenGL::GL
+    Eigen3::Eigen
 )
