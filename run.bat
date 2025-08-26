@@ -1,3 +1,3 @@
 cd build
-Water_simulation.sln
+FluidSimulation.sln
 cd ..

@@ -9,6 +9,7 @@ find_package(Eigen3 REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glm REQUIRED)
+find_package(imgui REQUIRED)
 
 # OpenGL ищем через системный CMake
 find_package(OpenGL REQUIRED)
@@ -17,13 +18,23 @@ find_package(OpenGL REQUIRED)
 enable_language(CUDA)
 find_package(CUDAToolkit REQUIRED)
 
-add_executable(Simulation src/main.cpp)
+add_executable(Simulation 
+    src/main.cpp
+    src/sph_solver.cu
+    src/renderer.cpp
+)
 
 target_link_libraries(Simulation
     CUDA::cudart  
-    glfw3
+    glfw
     GLEW::GLEW
-    glm
+    glm::glm
     OpenGL::GL
     Eigen3::Eigen
+    imgui::imgui
+)
+
+# Include директории
+target_include_directories(Simulation PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
