@@ -98,7 +98,9 @@ int main()
     if (!window) return -1;
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(1);  // Ограничение fps в частоту экрана
+
+
 
     // Настройка проекции
     SetupProjection();
@@ -137,12 +139,30 @@ GLFWwindow* StartGLFW()
         return nullptr;
     }
 
+    // Создаём окно
     GLFWwindow* window = glfwCreateWindow((int)screenWidth, (int)screenHeight, "Fluid_simulation", NULL, NULL);
     if (!window)
     {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return nullptr;
+    }
+
+    // Получаем разрешение монитора и позиционируем окно по центру
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+    if (primaryMonitor)
+    {
+        const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
+        if (videoMode)
+        {
+            int monitorX, monitorY;
+            glfwGetMonitorPos(primaryMonitor, &monitorX, &monitorY);
+
+            int windowPosX = monitorX + (videoMode->width - (int)screenWidth) / 2;
+            int windowPosY = monitorY + (videoMode->height - (int)screenHeight) / 2;
+
+            glfwSetWindowPos(window, windowPosX, windowPosY);
+        }
     }
 
     return window;
