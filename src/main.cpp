@@ -1,6 +1,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
+#include <glm/glm.hpp>
 
 GLFWwindow* StartGLFW(); // Функция создания окна
 float screenWidth = 800.0f;
@@ -9,84 +10,20 @@ float screenHeight = 800.0f;
 float centerX = screenWidth / 2.0f;
 float centerY = screenHeight / 2.0f;
 int res = 20;
-float radius = 20.f;
+float ParticleRadius = 30.f;
 
 // Simulation constats
-float gravity = 9.81f;
-float elasticity = 0.f;
-
-
-/// 
-/// ОПИСАНИЕ ГРАНИЦЫ
-/// 
-float margin = 150.0f;        // Отступу границы
-float effectiveBorder = 2.0f; // Толщина границы
-float borderWidth = screenWidth - 2 * margin;  // Ширина границы
-float borderHeight = screenHeight - 2 * margin; // Высота границы
-float borderX = (screenWidth - borderWidth) / 2;  // Центрирование по X
-float borderY = (screenHeight - borderHeight) / 2; // Центрирование по Y
-
-void DrawBorder(float x, float y, float width, float height, float borderThickness = 2.0f)
-{
-    glLineWidth(borderThickness);
-    glBegin(GL_LINE_LOOP);
-    glVertex2f(x, y);
-    glVertex2f(x + width, y);
-    glVertex2f(x + width, y + height);
-    glVertex2f(x, y + height);
-    glEnd();
-}
-
-
+glm::vec2 gravity = glm::vec2( 1.f, 9.81f ) / 100.f;
+float elasticity = 1.0f;
 
 
 // Структура частицы
-struct Particle 
+struct Particle
 {
-    float radius = 20.0f;
-    std::vector<float> position = { 0.f, 0.f };
-    std::vector<float> velocity = { 0.f, 0.f };
+    float radius = ParticleRadius;
+    glm::vec2 position = { 0.f, 0.f };
+    glm::vec2 velocity = { 0.f, 0.f };
 };
-
-Particle particle1{ radius, {screenWidth / 2, screenHeight - radius}, {0.f, 0.f} };
-
-void ApplyGravity(Particle& particle)
-{
-    //particle.velocity[0] -= gravity / 100;
-    particle.velocity[1] -= gravity / 100;
-    particle.position[0] += particle.velocity[0];
-    particle.position[1] += particle.velocity[1];
-}
-
-void CheckBorderCollision(Particle& particle)
-{
-    float minX = margin + effectiveBorder + particle.radius;
-    float maxX = screenWidth - margin - effectiveBorder - particle.radius;
-    float minY = margin + effectiveBorder + particle.radius;
-    float maxY = screenHeight - margin - effectiveBorder - particle.radius;
-
-    if (particle.position[1] < minY)
-    {
-        particle.position[1] = 2 * minY - particle.position[1];
-        particle.velocity[1] *= -0.95;
-    }
-    else if (particle.position[1] > maxY)
-    {
-        particle.position[1] = 2 * maxY - particle.position[1];
-        particle.velocity[1] *= -0.95;
-    }
-
-    if (particle.position[0] < minX)
-    {
-        particle.position[0] = 2 * minX - particle.position[0];
-        particle.velocity[0] *= -0.95;
-    }
-    else if (particle.position[0] > maxX)
-    {
-        particle.position[0] = 2 * maxX - particle.position[0];
-        particle.velocity[0] *= -0.95;
-    }
-}
 
 
 void DrawCircle(float cx, float cy, float radius, int res)
@@ -105,10 +42,119 @@ void DrawCircle(float cx, float cy, float radius, int res)
 }
 
 
-void DrawParticle(Particle& particle)
+/// 
+/// ОПИСАНИЕ ГРАНИЦЫ
+/// 
+
+class Border
 {
-    DrawCircle(particle.position[0], particle.position[1], particle.radius, res = 20);
-}
+    glm::vec2 centerPosition = { screenWidth / 2, screenHeight / 2 };
+    float borderThikness = 2.0f;
+    float borderLength = 100.0f;
+    float borderHeight = 100.0f;
+    int numParticles = 1;
+
+
+    float rotationAngle = 0.f;
+    std::vector<Particle> particles;
+
+    
+
+public:
+    Border(float borderLength, float borderHeight, float borderThikness, int numParticles):
+        borderHeight(borderHeight),
+        borderLength(borderLength),
+        borderThikness(borderThikness),
+        numParticles(numParticles)
+        {
+            CreateParticles(numParticles);
+        }
+
+    void DrawBorder()
+    {
+        glLineWidth(borderThikness);
+        glBegin(GL_LINE_LOOP);
+        glVertex2f(centerPosition.x - borderLength / 2, centerPosition.y - borderHeight / 2);
+        glVertex2f(centerPosition.x + borderLength / 2, centerPosition.y - borderHeight / 2);
+        glVertex2f(centerPosition.x + borderLength / 2, centerPosition.y + borderHeight / 2);
+        glVertex2f(centerPosition.x - borderLength / 2, centerPosition.y + borderHeight / 2);
+        glEnd();
+    }
+
+    void DrawParticles()
+    {
+        for (auto& particle : particles)
+        {
+            DrawCircle(particle.position.x, particle.position.y, particle.radius, res = 20);
+        }
+    }
+
+    void ApplyGravity()
+    {
+        for (auto& particle : particles)
+        {
+            particle.velocity -= gravity;
+            particle.position += particle.velocity;
+        }
+    }
+
+    void CheckBorderCollisions()
+    {
+        float minX = centerPosition.x - borderLength / 2 + borderThikness + ParticleRadius;
+        float maxX = centerPosition.x + borderLength / 2 - borderThikness - ParticleRadius;
+        float minY = centerPosition.y - borderHeight / 2 + borderThikness + ParticleRadius;
+        float maxY = centerPosition.y + borderHeight / 2 - borderThikness - ParticleRadius;
+
+        for (auto& particle : particles)
+        {
+            if (particle.position.y < minY)
+            {
+                particle.position.y = 2 * minY - particle.position.y;
+                particle.velocity.y *= -1 * elasticity;
+            }
+            else if (particle.position.y > maxY)
+            {
+                particle.position.y = 2 * maxY - particle.position.y;
+                particle.velocity.y *= -1 * elasticity;
+            }
+
+            if (particle.position.x < minX)
+            {
+                particle.position.x = 2 * minX - particle.position.x;
+                particle.velocity.x *= -1 * elasticity;
+            }
+            else if (particle.position.x > maxX)
+            {
+                particle.position.x = 2 * maxX - particle.position.x;
+                particle.velocity.x *= -1 * elasticity;
+            }
+        }
+
+    }
+
+    void Update()
+    {
+        ApplyGravity();
+        CheckBorderCollisions();
+    }
+
+    void Draw()
+    {
+        glColor3f(0.0f, 0.0f, 0.0f);
+        DrawBorder();
+        DrawParticles();
+    }
+
+    void CreateParticles(int n = 1)
+    {
+        for (int i = 0; i < n; ++i)
+        {
+            Particle particle;
+            particle.position = this->centerPosition;
+            particles.push_back(particle);
+        }
+    }
+};
 
 
 
@@ -123,6 +169,7 @@ void SetupProjection()
 
 
 
+Border border(400.0f, 400.0f, 2.0f, 1);
 
 int main()
 {
@@ -144,18 +191,9 @@ int main()
     {
         glClear(GL_COLOR_BUFFER_BIT);
 
+        border.Update();
+        border.Draw();
 
-        // Рисуем границу
-        glColor3f(0.0f, 0.0f, 0.0f);
-        DrawBorder(borderX, borderY, borderWidth, borderHeight, 3.0f);
-
-
-        // Рисуем частицу
-        glColor3f(0.0f, 0.0f, 0.0f);
-        DrawParticle(particle1);
-        
-        ApplyGravity(particle1);
-        CheckBorderCollision(particle1);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -164,8 +202,6 @@ int main()
     glfwTerminate();
     return 0;
 }
-
-
 
 
 GLFWwindow* StartGLFW()
