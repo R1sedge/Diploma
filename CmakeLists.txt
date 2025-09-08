@@ -22,6 +22,7 @@ add_executable(Simulation
     src/main.cpp
     src/sph_solver.cu
     src/renderer.cpp
+    src/sph_solver.cpp
 )
 
 target_link_libraries(Simulation
@@ -37,4 +38,5 @@ target_link_libraries(Simulation
 # Include директории
 target_include_directories(Simulation PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/fluid
 )

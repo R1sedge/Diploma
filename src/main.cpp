@@ -3,21 +3,23 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-GLFWwindow* StartGLFW(); // Функция создания окна
+GLFWwindow* StartGLFW(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
 float screenWidth = 800.0f;
 float screenHeight = 800.0f;
 
 float centerX = screenWidth / 2.0f;
 float centerY = screenHeight / 2.0f;
-int res = 20;
-float ParticleRadius = 30.f;
+int res = 50;
 
 // Simulation constats
-glm::vec2 gravity = glm::vec2( 1.f, 9.81f ) / 100.f;
-float elasticity = 1.0f;
+glm::vec2 gravity = glm::vec2( 5.f, -9.81f ) / 333.f;
+float elasticity = 1.f;
+
+float ParticleRadius = 5.f;
+int numParticles = 2000;
 
 
-// Структура частицы
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 struct Particle
 {
     float radius = ParticleRadius;
@@ -26,12 +28,13 @@ struct Particle
 };
 
 
-void DrawCircle(float cx, float cy, float radius, int res)
+
+void DrawCircle(float cx, float cy, float radius)
 {
     glBegin(GL_TRIANGLE_FAN);
     glVertex2f(cx, cy);
 
-    for (int i = 0; i <= res; i++) // <= res для закрытия круга
+    for (int i = 0; i <= res; i++) // <= res пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     {
         float angle = 2.0f * 3.1415926f * (float)i / res;
         float x = cx + cos(angle) * radius;
@@ -43,7 +46,7 @@ void DrawCircle(float cx, float cy, float radius, int res)
 
 
 /// 
-/// ОПИСАНИЕ ГРАНИЦЫ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 /// 
 
 class Border
@@ -52,7 +55,6 @@ class Border
     float borderThikness = 2.0f;
     float borderLength = 100.0f;
     float borderHeight = 100.0f;
-    int numParticles = 1;
 
 
     float rotationAngle = 0.f;
@@ -61,11 +63,10 @@ class Border
     
 
 public:
-    Border(float borderLength, float borderHeight, float borderThikness, int numParticles):
+    Border(float borderLength, float borderHeight, float borderThikness):
         borderHeight(borderHeight),
         borderLength(borderLength),
-        borderThikness(borderThikness),
-        numParticles(numParticles)
+        borderThikness(borderThikness)
         {
             CreateParticles(numParticles);
         }
@@ -85,7 +86,7 @@ public:
     {
         for (auto& particle : particles)
         {
-            DrawCircle(particle.position.x, particle.position.y, particle.radius, res = 20);
+            DrawCircle(particle.position.x, particle.position.y, ParticleRadius);
         }
     }
 
@@ -93,7 +94,7 @@ public:
     {
         for (auto& particle : particles)
         {
-            particle.velocity -= gravity;
+            particle.velocity += gravity;
             particle.position += particle.velocity;
         }
     }
@@ -147,10 +148,16 @@ public:
 
     void CreateParticles(int n = 1)
     {
-        for (int i = 0; i < n; ++i)
+        int particlesPerRow = (int)sqrt(n);
+        int particlesPerCol = (n - 1) / particlesPerRow + 1;
+        float spacing = ParticleRadius * 2 + 5.f;
+
+        for (int i = 0; i < n; i++)
         {
             Particle particle;
             particle.position = this->centerPosition;
+            particle.position.x += (i % particlesPerRow - particlesPerRow / 2.f + 0.5f) * spacing;
+            particle.position.y += (i / particlesPerRow - particlesPerCol / 2.f + 0.5f) * spacing;
             particles.push_back(particle);
         }
     }
@@ -162,14 +169,14 @@ void SetupProjection()
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, screenWidth, 0, screenHeight, -1, 1); // Устанавливаем ортографическую проекцию
+    glOrtho(0, screenWidth, 0, screenHeight, -1, 1); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
 
 
 
-Border border(400.0f, 400.0f, 2.0f, 1);
+Border border(400.0f, 400.0f, 2.0f);
 
 int main()
 {
@@ -177,11 +184,11 @@ int main()
     if (!window) return -1;
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);  // Ограничение fps в частоту экрана
+    glfwSwapInterval(1);  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ fps пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
 
 
-    // Настройка проекции
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     SetupProjection();
 
  
@@ -212,7 +219,7 @@ GLFWwindow* StartGLFW()
         return nullptr;
     }
 
-    // Создаём окно
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
     GLFWwindow* window = glfwCreateWindow((int)screenWidth, (int)screenHeight, "Fluid_simulation", NULL, NULL);
     if (!window)
     {
@@ -221,7 +228,7 @@ GLFWwindow* StartGLFW()
         return nullptr;
     }
 
-    // Получаем разрешение монитора и позиционируем окно по центру
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
     if (primaryMonitor)
     {
