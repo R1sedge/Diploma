@@ -3,7 +3,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-GLFWwindow* StartGLFW(); // ������� �������� ����
+GLFWwindow* StartGLFW();
 float screenWidth = 800.0f;
 float screenHeight = 800.0f;
 
@@ -12,19 +12,30 @@ float centerY = screenHeight / 2.0f;
 int res = 50;
 
 // Simulation constats
-glm::vec2 gravity = glm::vec2( 5.f, -9.81f ) / 333.f;
-float elasticity = 1.f;
+glm::vec2 gravity = glm::vec2( 0.f, -9.81f ) / 500.f;
+float elasticity = 0.f;
 
-float ParticleRadius = 5.f;
-int numParticles = 2000;
+float ParticleRadius = 10.f;
+int numParticles = 5;
 
-
-// ��������� �������
+//
+// Particle definition
+//
 struct Particle
 {
     float radius = ParticleRadius;
+    float mass = 1.f;
     glm::vec2 position = { 0.f, 0.f };
     glm::vec2 velocity = { 0.f, 0.f };
+    glm::vec2 acceleration = { 0.f, 0.f };
+    glm::vec2 force = { 0.f, 0.f };
+    
+    void ApplyForce()
+    {
+        this->acceleration = this->force / this->mass;
+        this->velocity += acceleration;
+        this->position += velocity;
+    }
 };
 
 
@@ -34,7 +45,7 @@ void DrawCircle(float cx, float cy, float radius)
     glBegin(GL_TRIANGLE_FAN);
     glVertex2f(cx, cy);
 
-    for (int i = 0; i <= res; i++) // <= res ��� �������� �����
+    for (int i = 0; i <= res; i++)
     {
         float angle = 2.0f * 3.1415926f * (float)i / res;
         float x = cx + cos(angle) * radius;
@@ -46,9 +57,8 @@ void DrawCircle(float cx, float cy, float radius)
 
 
 /// 
-/// �������� �������
+/// Border
 /// 
-
 class Border
 {
     glm::vec2 centerPosition = { screenWidth / 2, screenHeight / 2 };
@@ -71,6 +81,7 @@ public:
             CreateParticles(numParticles);
         }
 
+    // Vizualization
     void DrawBorder()
     {
         glLineWidth(borderThikness);
@@ -90,12 +101,27 @@ public:
         }
     }
 
+    void Draw()
+    {
+        glColor3f(0.0f, 0.0f, 0.0f);
+        DrawBorder();
+        DrawParticles();
+    }
+
+    // Physics
+    void ApplyForces()
+    {
+        for (auto& particle : particles)
+        {
+           particle.ApplyForce();
+        }
+    }
+
     void ApplyGravity()
     {
         for (auto& particle : particles)
         {
-            particle.velocity += gravity;
-            particle.position += particle.velocity;
+            particle.force += gravity * particle.mass;
         }
     }
 
@@ -110,40 +136,66 @@ public:
         {
             if (particle.position.y < minY)
             {
-                particle.position.y = 2 * minY - particle.position.y;
-                particle.velocity.y *= -1 * elasticity;
+                particle.force += glm::vec2(0.f, particle.force.y * -1);
+                particle.velocity.y = 0.f;
             }
             else if (particle.position.y > maxY)
             {
-                particle.position.y = 2 * maxY - particle.position.y;
-                particle.velocity.y *= -1 * elasticity;
+                particle.force += glm::vec2(0.f, particle.force.y * -1);
+                particle.velocity.y = 0.f;
             }
 
             if (particle.position.x < minX)
             {
-                particle.position.x = 2 * minX - particle.position.x;
-                particle.velocity.x *= -1 * elasticity;
+                particle.force += glm::vec2(particle.force.x * -1, 0.f);
+                particle.velocity.x = 0.f;
             }
             else if (particle.position.x > maxX)
             {
-                particle.position.x = 2 * maxX - particle.position.x;
-                particle.velocity.x *= -1 * elasticity;
+                particle.force += glm::vec2(particle.force.x * -1, 0.f);
+                particle.velocity.x = 0.f;
             }
         }
 
     }
 
+    void ResetForces()
+    {
+        for (auto& particle : particles)
+        {
+            particle.force = { 0.f, 0.f };
+        }
+    }
+
     void Update()
     {
         ApplyGravity();
+        DetectCollisions();
         CheckBorderCollisions();
+        ApplyForces();
+        for (int i = 0; i < particles.size(); i++)
+        {
+            //std::cout << particles.position.x << " " << particles.position.y << std::endl;
+            //std::cout << particle.velocity.x << " " << particle.velocity.y << std::endl;
+            //std::cout << particle.acceleration.x << " " << particle.acceleration.y << std::endl;
+            std::cout << i << " " << particles[i].force.x << " " << particles[i].force.y << std::endl;
+        }
+        ResetForces();
     }
 
-    void Draw()
+    void DetectCollisions()
     {
-        glColor3f(0.0f, 0.0f, 0.0f);
-        DrawBorder();
-        DrawParticles();
+        for (int i = 0; i < particles.size(); i++)
+            for (int j = 0; j < particles.size(); j++)
+            {
+                if (i != j)
+                {
+                    if (glm::distance(particles[i].position, particles[j].position) <= ParticleRadius * 2)
+                    {
+                        particles[i].force += -particles[i].mass * gravity * glm::dot(glm::vec2(0, -1), glm::normalize(particles[j].position - particles[i].position));
+                    }
+                }
+            }
     }
 
     void CreateParticles(int n = 1)
