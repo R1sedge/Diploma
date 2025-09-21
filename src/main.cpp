@@ -13,7 +13,7 @@ int res = 20;
 float ParticleRadius = 30.f;
 
 // Simulation constats
-glm::vec2 gravity = glm::vec2( 1.f, 9.81f ) / 100.f;
+glm::vec2 gravity = glm::vec2( 0.f, -5.f ) / 300.f;
 float elasticity = 1.0f;
 
 
@@ -22,7 +22,10 @@ struct Particle
 {
     float radius = ParticleRadius;
     glm::vec2 position = { 0.f, 0.f };
-    glm::vec2 velocity = { 0.f, 0.f };
+
+    Particle() {}
+    Particle(glm::vec2 position) : position(position) {}
+    Particle(float r, glm::vec2 position) : radius(r), position(position) {}
 };
 
 
@@ -49,10 +52,17 @@ void DrawCircle(float cx, float cy, float radius, int res)
 class Border
 {
     glm::vec2 centerPosition = { screenWidth / 2, screenHeight / 2 };
-    float borderThikness = 2.0f;
-    float borderLength = 100.0f;
-    float borderHeight = 100.0f;
-    int numParticles = 1;
+    float borderThikness;
+    float borderLength;
+    float borderHeight;
+
+
+    int numParticles;
+    float localRadius;
+
+
+    glm::mat2x2 transformMatrix;
+    float aspectRatio;
 
 
     float rotationAngle = 0.f;
@@ -61,12 +71,16 @@ class Border
     
 
 public:
-    Border(float borderLength, float borderHeight, float borderThikness, int numParticles):
-        borderHeight(borderHeight),
+    Border(float borderLength, float borderHeight, float borderThikness, int numParticles) :
         borderLength(borderLength),
+        borderHeight(borderHeight),
         borderThikness(borderThikness),
         numParticles(numParticles)
         {
+            aspectRatio = borderLength / borderHeight; // Нужно рассмотреть второй случай
+            transformMatrix = glm::mat2x2(borderLength / 2, 0, 0, borderHeight * aspectRatio / 2);
+            localRadius = 2 * ParticleRadius / borderLength;
+
             CreateParticles(numParticles);
         }
 
@@ -85,56 +99,52 @@ public:
     {
         for (auto& particle : particles)
         {
-            DrawCircle(particle.position.x, particle.position.y, particle.radius, res = 20);
-        }
-    }
-
-    void ApplyGravity()
-    {
-        for (auto& particle : particles)
-        {
-            particle.velocity -= gravity;
-            particle.position += particle.velocity;
+            glm::vec2 absolutePos = transformMatrix * particle.position + centerPosition;
+            DrawCircle(absolutePos.x, absolutePos.y, particle.radius, res = 20);
         }
     }
 
     void CheckBorderCollisions()
     {
-        float minX = centerPosition.x - borderLength / 2 + borderThikness + ParticleRadius;
-        float maxX = centerPosition.x + borderLength / 2 - borderThikness - ParticleRadius;
-        float minY = centerPosition.y - borderHeight / 2 + borderThikness + ParticleRadius;
-        float maxY = centerPosition.y + borderHeight / 2 - borderThikness - ParticleRadius;
+        float minX = -1 + localRadius;
+        float maxX = 1 - localRadius;
+        float minY = -1 / aspectRatio + localRadius;
+        float maxY = 1 / aspectRatio - localRadius;
 
         for (auto& particle : particles)
         {
-            if (particle.position.y < minY)
+            if (particle.position.y <= minY)
             {
-                particle.position.y = 2 * minY - particle.position.y;
-                particle.velocity.y *= -1 * elasticity;
+                particle.position.y = minY;
             }
-            else if (particle.position.y > maxY)
+            else if (particle.position.y >= maxY)
             {
-                particle.position.y = 2 * maxY - particle.position.y;
-                particle.velocity.y *= -1 * elasticity;
+                particle.position.y = maxY;
             }
 
-            if (particle.position.x < minX)
+            if (particle.position.x <= minX)
             {
-                particle.position.x = 2 * minX - particle.position.x;
-                particle.velocity.x *= -1 * elasticity;
+                particle.position.x = minX;
             }
-            else if (particle.position.x > maxX)
+            else if (particle.position.x >= maxX)
             {
-                particle.position.x = 2 * maxX - particle.position.x;
-                particle.velocity.x *= -1 * elasticity;
+                particle.position.x = maxX;
             }
         }
 
     }
-
-    void Update()
+    
+    void applyForce(float dt)
     {
-        ApplyGravity();
+        for (auto& particle : particles)
+        {
+            particle.position += gravity * dt;
+        }
+    }
+
+    void Update(float dt)
+    {
+        applyForce(dt);
         CheckBorderCollisions();
     }
 
@@ -150,9 +160,14 @@ public:
         for (int i = 0; i < n; ++i)
         {
             Particle particle;
-            particle.position = this->centerPosition;
+            particle.position = glm::vec2(0, 0);
             particles.push_back(particle);
         }
+    }
+
+    void Rotate(float angle)
+    {
+       glm::mat2x2 rotation_matrix = glm::mat2x2(cos(angle), -sin(angle), sin(angle), cos(angle));  
     }
 };
 
@@ -169,7 +184,7 @@ void SetupProjection()
 
 
 
-Border border(400.0f, 400.0f, 2.0f, 1);
+Border border(300.0f, 400.0f, 2.0f, 1);
 
 int main()
 {
@@ -191,7 +206,7 @@ int main()
     {
         glClear(GL_COLOR_BUFFER_BIT);
 
-        border.Update();
+        border.Update(1.f / 3.f);
         border.Draw();
 
 

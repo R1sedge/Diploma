@@ -20,8 +20,6 @@ find_package(CUDAToolkit REQUIRED)
 
 add_executable(Simulation 
     src/main.cpp
-    src/sph_solver.cu
-    src/renderer.cpp
 )
 
 target_link_libraries(Simulation
