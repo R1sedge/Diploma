@@ -55,6 +55,8 @@ class Border
     float borderThikness;
     float borderLength;
     float borderHeight;
+    std::vector<glm::vec2> corners;
+    std::vector<glm::vec2> normals;
 
 
     int numParticles;
@@ -81,17 +83,32 @@ public:
             transformMatrix = glm::mat2x2(borderLength / 2, 0, 0, borderHeight * aspectRatio / 2);
             localRadius = 2 * ParticleRadius / borderLength;
 
+            corners = { { -1, -1 / aspectRatio }, { -1, 1 / aspectRatio }, { 1, 1 / aspectRatio }, { 1, -1 / aspectRatio } }; // Clockwise
+            normals = { { 1, 0 }, { 0, -1 }, { -1, 0 }, { 0, 1 } }; // left, up, right, bottom
+
             CreateParticles(numParticles);
         }
 
-    void DrawBorder()
+    glm::vec2 ToLocal(glm::vec2 pos)
     {
+        return glm::inverse(transformMatrix) * (pos - centerPosition);
+    }
+
+    glm::vec2 ToGlobal(glm::vec2 pos)
+    {
+        return transformMatrix * pos + centerPosition;
+    }
+
+    void DrawBorder(std::vector<glm::vec2> corners)
+    {
+
         glLineWidth(borderThikness);
         glBegin(GL_LINE_LOOP);
-        glVertex2f(centerPosition.x - borderLength / 2, centerPosition.y - borderHeight / 2);
-        glVertex2f(centerPosition.x + borderLength / 2, centerPosition.y - borderHeight / 2);
-        glVertex2f(centerPosition.x + borderLength / 2, centerPosition.y + borderHeight / 2);
-        glVertex2f(centerPosition.x - borderLength / 2, centerPosition.y + borderHeight / 2);
+        for (auto& corner : corners)
+        {   
+            glm::vec2 globalPos = ToGlobal(corner);
+            glVertex2f(globalPos.x, globalPos.y);
+        }
         glEnd();
     }
 
@@ -99,36 +116,36 @@ public:
     {
         for (auto& particle : particles)
         {
-            glm::vec2 absolutePos = transformMatrix * particle.position + centerPosition;
+            glm::vec2 absolutePos = ToGlobal(particle.position);
             DrawCircle(absolutePos.x, absolutePos.y, particle.radius, res = 20);
         }
     }
 
     void CheckBorderCollisions()
     {
-        float minX = -1 + localRadius;
-        float maxX = 1 - localRadius;
-        float minY = -1 / aspectRatio + localRadius;
-        float maxY = 1 / aspectRatio - localRadius;
 
         for (auto& particle : particles)
         {
-            if (particle.position.y <= minY)
+            if (glm::dot(particle.position - corners[0] - normals[0] * localRadius, normals[0]) <= 0)
             {
-                particle.position.y = minY;
+                std::cout << "0" << std::endl;
+                particle.position -= glm::dot(particle.position - corners[0] - normals[0] * localRadius, normals[0]) * normals[0];
             }
-            else if (particle.position.y >= maxY)
+            else if (glm::dot(particle.position - corners[2] - normals[2] * localRadius, normals[2]) <= 0)
             {
-                particle.position.y = maxY;
+                std::cout << "2" << std::endl;
+                particle.position -= glm::dot(particle.position - corners[2] - normals[2] * localRadius, normals[2]) * normals[2];
             }
 
-            if (particle.position.x <= minX)
+            if (glm::dot(particle.position - corners[1] - normals[1] * localRadius, normals[1]) <= 0)
             {
-                particle.position.x = minX;
+                std::cout << "1" << std::endl;
+                particle.position -= glm::dot(particle.position - corners[1] - normals[1] * localRadius, normals[1]) * normals[1];
             }
-            else if (particle.position.x >= maxX)
+            else if (glm::dot(particle.position - corners[3] - normals[3] * localRadius, normals[3]) <= 0)
             {
-                particle.position.x = maxX;
+                std::cout << "3" << std::endl;
+                particle.position -= glm::dot(particle.position - corners[3] - normals[3] * localRadius, normals[3]) * normals[3];
             }
         }
 
@@ -151,7 +168,7 @@ public:
     void Draw()
     {
         glColor3f(0.0f, 0.0f, 0.0f);
-        DrawBorder();
+        DrawBorder(corners);
         DrawParticles();
     }
 
@@ -167,7 +184,24 @@ public:
 
     void Rotate(float angle)
     {
-       glm::mat2x2 rotation_matrix = glm::mat2x2(cos(angle), -sin(angle), sin(angle), cos(angle));  
+        rotationAngle += angle;
+
+        glm::mat2x2 rotation_matrix = glm::mat2x2(cos(angle), -sin(angle), sin(angle), cos(angle));  
+        for (auto& corner : corners)
+        {
+            corner = rotation_matrix * corner;
+        }
+
+        for (auto& normal : normals)
+        {
+            normal = rotation_matrix * normal;
+        }
+
+
+        for (auto& particle : particles)
+        {
+            particle.position = rotation_matrix * particle.position;
+        }
     }
 };
 
@@ -206,8 +240,10 @@ int main()
     {
         glClear(GL_COLOR_BUFFER_BIT);
 
+        border.Rotate(0.01f);
         border.Update(1.f / 3.f);
         border.Draw();
+        
 
 
         glfwSwapBuffers(window);
