@@ -2,8 +2,16 @@
 #include <iostream>
 #include <vector>
 #include <glm/glm.hpp>
+#include <Windows.h>
+#define M_PI 3.14159265358979323846
 
 GLFWwindow* StartGLFW(); // Функция создания окна
+void mouse_button_callback(GLFWwindow*, int, int, int);
+void cursor_position_callback(GLFWwindow*, double, double);
+bool leftMousePressed = false;
+float lastAngle = 0;
+float deltaAngle = 0;
+
 float screenWidth = 800.0f;
 float screenHeight = 800.0f;
 
@@ -13,7 +21,7 @@ int res = 20;
 float ParticleRadius = 30.f;
 
 // Simulation constats
-glm::vec2 gravity = glm::vec2( 0.f, -5.f ) / 300.f;
+glm::vec2 gravity = glm::vec2( 0.f, -2.81f ) / 200.f;
 float elasticity = 1.0f;
 
 
@@ -22,6 +30,8 @@ struct Particle
 {
     float radius = ParticleRadius;
     glm::vec2 position = { 0.f, 0.f };
+    
+    bool onBorder = false;
 
     Particle() {}
     Particle(glm::vec2 position) : position(position) {}
@@ -36,7 +46,7 @@ void DrawCircle(float cx, float cy, float radius, int res)
 
     for (int i = 0; i <= res; i++) // <= res для закрытия круга
     {
-        float angle = 2.0f * 3.1415926f * (float)i / res;
+        float angle = 2.0f * M_PI * (float)i / res;
         float x = cx + cos(angle) * radius;
         float y = cy + sin(angle) * radius;
         glVertex2f(x, y);
@@ -128,24 +138,36 @@ public:
         {
             if (glm::dot(particle.position - corners[0] - normals[0] * localRadius, normals[0]) <= 0)
             {
-                std::cout << "0" << std::endl;
+                //std::cout << "0" << std::endl;
                 particle.position -= glm::dot(particle.position - corners[0] - normals[0] * localRadius, normals[0]) * normals[0];
+                particle.onBorder = true;
             }
             else if (glm::dot(particle.position - corners[2] - normals[2] * localRadius, normals[2]) <= 0)
             {
-                std::cout << "2" << std::endl;
+                //std::cout << "2" << std::endl;
                 particle.position -= glm::dot(particle.position - corners[2] - normals[2] * localRadius, normals[2]) * normals[2];
+                particle.onBorder = true;
+            }
+            else
+            {
+                particle.onBorder = false;
             }
 
             if (glm::dot(particle.position - corners[1] - normals[1] * localRadius, normals[1]) <= 0)
             {
-                std::cout << "1" << std::endl;
+                //std::cout << "1" << std::endl;
                 particle.position -= glm::dot(particle.position - corners[1] - normals[1] * localRadius, normals[1]) * normals[1];
+                particle.onBorder = true;
             }
             else if (glm::dot(particle.position - corners[3] - normals[3] * localRadius, normals[3]) <= 0)
             {
-                std::cout << "3" << std::endl;
+                //std::cout << "3" << std::endl;
                 particle.position -= glm::dot(particle.position - corners[3] - normals[3] * localRadius, normals[3]) * normals[3];
+                particle.onBorder = true;
+            }
+            else
+            {
+                particle.onBorder = false;
             }
         }
 
@@ -197,11 +219,14 @@ public:
             normal = rotation_matrix * normal;
         }
 
-
+        /*
         for (auto& particle : particles)
         {
-            particle.position = rotation_matrix * particle.position;
+            if (particle.onBorder)
+                particle.position = rotation_matrix * particle.position;
         }
+        */
+        deltaAngle = 0;
     }
 };
 
@@ -218,17 +243,22 @@ void SetupProjection()
 
 
 
-Border border(300.0f, 400.0f, 2.0f, 1);
+Border border(300.0f, 600.0f, 2.0f, 1);
 
 int main()
 {
     GLFWwindow* window = StartGLFW();
     if (!window) return -1;
 
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);  // Ограничение fps в частоту экрана
 
-
+    // Установка callback функций
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetCursorPosCallback(window, cursor_position_callback);
 
     // Настройка проекции
     SetupProjection();
@@ -240,7 +270,8 @@ int main()
     {
         glClear(GL_COLOR_BUFFER_BIT);
 
-        border.Rotate(0.01f);
+        
+        border.Rotate(deltaAngle);
         border.Update(1.f / 3.f);
         border.Draw();
         
@@ -290,4 +321,32 @@ GLFWwindow* StartGLFW()
     }
 
     return window;
+}
+
+// Callback функция для кнопок мыши
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        leftMousePressed = true;
+    }
+    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+        leftMousePressed = false;
+    }
+}
+
+// Callback функция для позиции курсора
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (leftMousePressed) {
+        // Вычисляем вектор от центра к позиции мыши
+        float dx = xpos - centerX;
+        float dy = ypos - centerY;
+
+        // Вычисляем угол в радианах
+        float currentAngle = std::atan2(dy, dx);
+        deltaAngle = currentAngle - lastAngle;
+        deltaAngle = deltaAngle > 0 ? min(deltaAngle, 0.1f) : max(deltaAngle, -0.1f);
+
+        //std::cout << "Угол: " << deltaAngle << " радиан" << std::endl;
+
+        lastAngle = currentAngle;
+    }
 }
