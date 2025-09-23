@@ -18,11 +18,14 @@ find_package(OpenGL REQUIRED)
 enable_language(CUDA)
 find_package(CUDAToolkit REQUIRED)
 
-add_executable(Simulation 
-    src/main.cpp
-)
+# Исходные файлы
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+file(GLOB_RECURSE HEADERS "src/*.h")
 
-target_link_libraries(Simulation
+# Создание исполняемого файла
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+target_link_libraries(${PROJECT_NAME}
     CUDA::cudart  
     glfw
     GLEW::GLEW
@@ -32,7 +35,5 @@ target_link_libraries(Simulation
     imgui::imgui
 )
 
-# Include директории
-target_include_directories(Simulation PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
+# Включение директорий
+target_include_directories(${PROJECT_NAME} PRIVATE src)
