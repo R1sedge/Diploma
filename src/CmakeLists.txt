@@ -1,0 +1,86 @@
+# Группировка исходных файлов по модулям
+set(CORE_SOURCES
+    core/Application.cpp
+    core/Config.cpp
+)
+
+set(CORE_HEADERS
+    core/Application.h
+    core/Config.h
+)
+
+set(INPUT_SOURCES
+    input/InputHandler.cpp
+)
+
+set(INPUT_HEADERS
+    input/InputHandler.h
+)
+
+set(OBJECTS_SOURCES
+    objects/Border.cpp
+    objects/Particle.cpp
+)
+
+set(OBJECTS_HEADERS
+    objects/Border.h
+    objects/Particle.h
+)
+
+set(PHYSICS_SOURCES
+    physics/ParticleSystem.cpp
+    physics/PhysicsEngine.cpp
+)
+
+set(PHYSICS_HEADERS
+    physics/ParticleSystem.h
+    physics/PhysicsEngine.h
+)
+
+set(RENDERING_SOURCES
+    rendering/Renderer.cpp
+)
+
+set(RENDERING_HEADERS
+    rendering/Renderer.h
+)
+
+set(MAIN_SOURCE main.cpp)
+
+# Группировка для Visual Studio
+source_group("Core" FILES ${CORE_SOURCES} ${CORE_HEADERS})
+source_group("Physics" FILES ${PHYSICS_SOURCES} ${PHYSICS_HEADERS})
+source_group("Rendering" FILES ${RENDERING_SOURCES} ${RENDERING_HEADERS})
+source_group("Objects" FILES ${OBJECTS_SOURCES} ${OBJECTS_HEADERS})
+source_group("Input" FILES ${INPUT_SOURCES} ${INPUT_HEADERS})
+
+# Создание исполняемого файла (добавляем ВСЕ файлы)
+add_executable(${PROJECT_NAME}
+    ${CORE_SOURCES} ${CORE_HEADERS}
+    ${PHYSICS_SOURCES} ${PHYSICS_HEADERS}
+    ${RENDERING_SOURCES} ${RENDERING_HEADERS}
+    ${OBJECTS_SOURCES} ${OBJECTS_HEADERS}
+    ${INPUT_SOURCES} ${INPUT_HEADERS}
+    ${MAIN_SOURCE}
+)
+
+# Подключение библиотек
+target_link_libraries(${PROJECT_NAME}
+    CUDA::cudart  
+    glfw
+    GLEW::GLEW
+    glm::glm
+    OpenGL::GL
+    Eigen3::Eigen
+    imgui::imgui
+)
+
+# Включение директорий
+target_include_directories(${PROJECT_NAME} PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/physics
+    ${CMAKE_CURRENT_SOURCE_DIR}/rendering
+    ${CMAKE_CURRENT_SOURCE_DIR}/objects
+    ${CMAKE_CURRENT_SOURCE_DIR}/input
+)

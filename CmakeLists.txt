@@ -4,36 +4,17 @@ project(FluidSimulation VERSION 0.1.0 LANGUAGES CXX C CUDA)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CUDA_STANDARD 17)
 
-# Поиск пакетов через vcpkg
+# Поиск пакетов
 find_package(Eigen3 REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glm REQUIRED)
 find_package(imgui REQUIRED)
-
-# OpenGL ищем через системный CMake
 find_package(OpenGL REQUIRED)
-
-# Настройка CUDA
-enable_language(CUDA)
 find_package(CUDAToolkit REQUIRED)
 
-# Исходные файлы
-file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE HEADERS "src/*.h")
+# Включение CUDA
+enable_language(CUDA)
 
-# Создание исполняемого файла
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-
-target_link_libraries(${PROJECT_NAME}
-    CUDA::cudart  
-    glfw
-    GLEW::GLEW
-    glm::glm
-    OpenGL::GL
-    Eigen3::Eigen
-    imgui::imgui
-)
-
-# Включение директорий
-target_include_directories(${PROJECT_NAME} PRIVATE src)
+# Подключение исходников
+add_subdirectory(src)
