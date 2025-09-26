@@ -1,5 +1,4 @@
 #include "Border.h"
-#include <GLFW/glfw3.h>
 #include <iostream>
 
 // Конструктор
@@ -16,13 +15,25 @@ Border::Border() :
         { 1, -1 / Config::BORDER_AR }
     };
 
-    // Нормали: left, up, right, bottom
-    normals = {
-        { 1, 0 },   // левая грань
-        { 0, -1 },  // верхняя грань  
-        { -1, 0 },  // правая грань
-        { 0, 1 }    // нижняя грань
-    };
+    // Нормали
+    for (int i = 0; i < corners.size() - 1; i++) 
+    {
+        glm::vec2 n = corners[i + 1] - corners[i];
+        n = glm::normalize(glm::vec2(-n.y, n.x));
+        if (glm::dot(n, (corners[i] - glm::vec2(0, 0))) > 0) 
+        {
+            n = -n;
+        }
+        normals.push_back(n);
+    }
+
+    glm::vec2 n = corners[0] - corners[corners.size() - 1];
+    n = glm::normalize(glm::vec2(-n.y, n.x));
+    if (glm::dot(n, (corners[corners.size() - 1] - glm::vec2(0, 0))) > 0)
+    {
+        n = -n;
+    }
+    normals.push_back(n);
 }
 
 // Поворот границы
