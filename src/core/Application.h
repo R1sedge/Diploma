@@ -6,6 +6,7 @@
 #include "Border.h"
 #include "InputHandler.h"
 #include "Config.h"
+#include "serializationManager.h"
 
 class Application {
 private:
@@ -13,6 +14,8 @@ private:
     Renderer renderer;
     PhysicsEngine physicsEngine;
     bool running;
+    SerializationManager serializer;
+    int currentFrame;
 
 public:
     Application();

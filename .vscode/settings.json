@@ -1,3 +1,7 @@
 {
-    "cmake.configureArgs": []
+    "cmake.configureArgs": [],
+    "files.associations": {
+        "iostream": "cpp"
+    },
+    "Codegeex.RepoIndex": true
 }

@@ -45,6 +45,14 @@ set(RENDERING_HEADERS
     rendering/Renderer.h
 )
 
+set(SERIALISATINION_SOURCES
+    serialization/SerializationManager.cpp
+)
+
+set(SERIALIZATION_HEADERS
+    serialization/SerializationManager.h
+)
+
 set(MAIN_SOURCE main.cpp)
 
 # Группировка для Visual Studio
@@ -53,6 +61,7 @@ source_group("Physics" FILES ${PHYSICS_SOURCES} ${PHYSICS_HEADERS})
 source_group("Rendering" FILES ${RENDERING_SOURCES} ${RENDERING_HEADERS})
 source_group("Objects" FILES ${OBJECTS_SOURCES} ${OBJECTS_HEADERS})
 source_group("Input" FILES ${INPUT_SOURCES} ${INPUT_HEADERS})
+source_group("Serialization" FILES ${SERIALISATINION_SOURCES} ${SERIALIZATION_HEADERS})
 
 # Создание исполняемого файла (добавляем ВСЕ файлы)
 add_executable(${PROJECT_NAME}
@@ -61,6 +70,7 @@ add_executable(${PROJECT_NAME}
     ${RENDERING_SOURCES} ${RENDERING_HEADERS}
     ${OBJECTS_SOURCES} ${OBJECTS_HEADERS}
     ${INPUT_SOURCES} ${INPUT_HEADERS}
+    ${SERIALISATINION_SOURCES} ${SERIALIZATION_HEADERS}
     ${MAIN_SOURCE}
 )
 
@@ -83,4 +93,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/rendering
     ${CMAKE_CURRENT_SOURCE_DIR}/objects
     ${CMAKE_CURRENT_SOURCE_DIR}/input
+    ${CMAKE_CURRENT_SOURCE_DIR}/serialization
 )

@@ -10,7 +10,7 @@ private:
     float screenHeight;
 
 public:
-    Renderer(float width = Config::SCREEN_WIDTH, float height = Config::SCREEN_HEIGHT);
+    Renderer(float width = Config::WINDOW_WIDTH, float height = Config::WINDOW_HEIGHT);
 
     void setupProjection() const;
     void clearScreen() const;

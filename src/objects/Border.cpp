@@ -7,7 +7,7 @@ Border::Border() :
     borderLength(Config::BORDER_LENGTH),
     borderHeight(Config::BORDER_HEIGHT)
 {
-    // Инициализация углов (по часовой стрелке)
+    // Инициализация углов
     corners = {
         { -1, -1 / Config::BORDER_AR },
         { -1, 1 / Config::BORDER_AR },

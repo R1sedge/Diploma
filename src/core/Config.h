@@ -4,8 +4,8 @@
 
 struct Config {
 	// Окно
-	static constexpr float SCREEN_WIDTH = 800.0f;
-	static constexpr float SCREEN_HEIGHT = 800.0f;
+	static constexpr float WINDOW_WIDTH = 800.0f;
+	static constexpr float WINDOW_HEIGHT = 800.0f;
 
 	// Физика
 	static constexpr glm::vec2 GRAVITY = glm::vec2(0.0f, -9.81f) / 20.0f;

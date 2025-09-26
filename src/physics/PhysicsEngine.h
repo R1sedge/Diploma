@@ -7,6 +7,7 @@ public:
     
     ParticleSystem particleSystem;
     Border border;
+    glm::vec2 centerPositionGlobal = glm::vec2(Config::WINDOW_WIDTH / 2, Config::WINDOW_HEIGHT / 2);
 
 private:
     glm::mat2x2 transformMatrix;
@@ -15,8 +16,8 @@ private:
 public:
     PhysicsEngine();
 
-    glm::vec2 toLocal(glm::vec2& globalPos) {return inverseTransformMatrix * (globalPos - border.getCenterPosition());};
-    glm::vec2 toGlobal(glm::vec2& localPos) {return transformMatrix * localPos + border.getCenterPosition();};
+    glm::vec2 toLocal(glm::vec2& globalPos) {return inverseTransformMatrix * (globalPos - centerPositionGlobal);};
+    glm::vec2 toGlobal(glm::vec2& localPos) {return transformMatrix * localPos + centerPositionGlobal;};
 
     void update(float dt);
     void rotate(float angle);

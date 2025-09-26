@@ -17,7 +17,7 @@ bool Application::initialize() {
         return false;
     }
 
-    InputHandler::initialize(Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT);
+    InputHandler::initialize(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT);
     setupCallbacks();
     renderer.setupProjection();
 
@@ -26,6 +26,11 @@ bool Application::initialize() {
     physicsEngine.particleSystem.addParticle(initialParticle);
 
     running = true;
+
+    // Начинаем запись
+    serializer.startRecording("../../src/simulation_data.txt", physicsEngine.particleSystem.getParticleCount());
+    currentFrame = 0;
+
     return true;
 }
 
@@ -33,7 +38,12 @@ void Application::run() {
     mainLoop();
 }
 
-void Application::shutdown() {
+void Application::shutdown() 
+{
+    if (serializer.isRecordingActive()) {
+        serializer.stopRecording();
+    }
+
     if (window) {
         glfwTerminate();
         window = nullptr;
@@ -46,7 +56,7 @@ bool Application::createWindow() {
         return false;
     }
 
-    window = glfwCreateWindow((int)Config::SCREEN_WIDTH, (int)Config::SCREEN_HEIGHT, "Fluid_simulation", NULL, NULL);
+    window = glfwCreateWindow((int)Config::WINDOW_WIDTH, (int)Config::WINDOW_HEIGHT, "Fluid_simulation", NULL, NULL);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -61,8 +71,8 @@ bool Application::createWindow() {
             int monitorX, monitorY;
             glfwGetMonitorPos(primaryMonitor, &monitorX, &monitorY);
 
-            int windowPosX = monitorX + (videoMode->width - (int)Config::SCREEN_WIDTH) / 2;
-            int windowPosY = monitorY + (videoMode->height - (int)Config::SCREEN_HEIGHT) / 2;
+            int windowPosX = monitorX + (videoMode->width - (int)Config::WINDOW_WIDTH) / 2;
+            int windowPosY = monitorY + (videoMode->height - (int)Config::WINDOW_HEIGHT) / 2;
 
             glfwSetWindowPos(window, windowPosX, windowPosY);
         }
@@ -101,6 +111,10 @@ void Application::update(float dt) {
         physicsEngine.rotate(currentDeltaAngle);
         InputHandler::resetDeltaAngle();
     }
+
+    // Записываем кадр
+    serializer.recordFrame(currentFrame, physicsEngine);
+    currentFrame++;
 }
 
 void Application::render() {
