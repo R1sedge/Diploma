@@ -7,21 +7,21 @@ PhysicsEngine::PhysicsEngine():
     particleSystem(),
     border()
 {
-
-    transformMatrix = glm::mat2x2(Config::BORDER_LENGTH / 2, 0, 0, Config::BORDER_HEIGHT * Config::BORDER_AR / 2);
+    // »нициализаци€ матриц преобразовани€
+    transformMatrix = glm::mat2x2(Config::BORDER_LENGTH / 2, 0, 0, Config::BORDER_HEIGHT * Config::BORDER_AR / 2); 
     inverseTransformMatrix = glm::inverse(transformMatrix);
 }
 
 void PhysicsEngine::update(float dt) {
 
-    // ќбновл€ем положение частиц
     particleSystem.applyGravity(dt);
+    particleSystem.update(dt);
 
-    resolveParticleCollisions(particleSystem.getParticles());
 
-    // ѕровер€ем коллизии с границами дл€ каждой частицы
-    checkBorderCollisions(particleSystem.getParticles(), border);
+    applyConstraint(particleSystem.getParticles(), border);
 
+    
+    //resolveParticleCollisions(particleSystem.getParticles());
 }
 
 void PhysicsEngine::rotate(float angle) {
@@ -49,37 +49,33 @@ std::vector<Particle> PhysicsEngine::getParticlesGlobal()
     return particlesGlobal;
 }
 
-void PhysicsEngine::checkBorderCollisions(std::vector<Particle>& particles, const Border& border) {
+void PhysicsEngine::applyConstraint(std::vector<Particle>& particles, const Border& border) {
     const auto& corners = border.getCorners();
     const auto& normals = border.getNormals();
-    float localRadius = border.getLocalRadius();
 
     for (auto& particle : particles)
     {
+        float localRadius = border.getLocalRadius(particle);
+
         // ѕроверка коллизий с левой и правой границами
         if (glm::dot(particle.position - corners[0] - normals[0] * localRadius, normals[0]) <= 0) {
             particle.position -= glm::dot(particle.position - corners[0] - normals[0] * localRadius, normals[0]) * normals[0];
-            particle.onBorder = true;
+            particle.velocity -= glm::dot(particle.velocity, normals[0]) * normals[0];
         }
         else if (glm::dot(particle.position - corners[2] - normals[2] * localRadius, normals[2]) <= 0) {
             particle.position -= glm::dot(particle.position - corners[2] - normals[2] * localRadius, normals[2]) * normals[2];
-            particle.onBorder = true;
-        }
-        else {
-            particle.onBorder = false;
+            particle.velocity -= glm::dot(particle.velocity, normals[2]) * normals[2];
         }
 
         // ѕроверка коллизий с верхней и нижней границами
         if (glm::dot(particle.position - corners[1] - normals[1] * localRadius, normals[1]) <= 0) {
             particle.position -= glm::dot(particle.position - corners[1] - normals[1] * localRadius, normals[1]) * normals[1];
-            particle.onBorder = true;
+            particle.velocity -= glm::dot(particle.velocity, normals[1]) * normals[1];
         }
         else if (glm::dot(particle.position - corners[3] - normals[3] * localRadius, normals[3]) <= 0) {
             particle.position -= glm::dot(particle.position - corners[3] - normals[3] * localRadius, normals[3]) * normals[3];
-            particle.onBorder = true;
-        }
-        else {
-            particle.onBorder = false;
+            particle.velocity -= glm::dot(particle.velocity, normals[3]) * normals[3];
+  
         }
     }
 }
@@ -93,7 +89,7 @@ void PhysicsEngine::resolveParticleCollisions(std::vector<Particle>& particles)
             glm::vec2 distVec = particles[i].position - particles[j].position;
             float dist = glm::length(distVec);
             distVec = glm::normalize(distVec);
-            float localRadius = border.getLocalRadius();
+            float localRadius = border.getLocalRadius(particles[i]);
             if (dist < localRadius * 2)
             {
                 particles[i].position += distVec * (localRadius - dist * 0.5f);
@@ -111,6 +107,5 @@ void PhysicsEngine::createParticles(int count)
         Particle p;
         p.position = glm::vec2((rand() % 1000 - 500) / 500.f, (rand() % 1000 - 500) / 500.f);
         particleSystem.addParticle(p);
-
     }
 }

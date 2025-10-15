@@ -16,8 +16,15 @@ void ParticleSystem::clearParticles() {
 
 void ParticleSystem::applyGravity(float dt) {
         for (auto& particle : particles) {
-            //std::cout << particle.position.x << " " << particle.position.y << std::endl;
-            particle.position += Config::GRAVITY * dt;
+            particle.accelerate(Config::GRAVITY);
         }
+}
+
+void ParticleSystem::update(float dt)
+{
+    for (auto& particle : particles)
+    {
+        particle.update(dt);
+    }
 }
 

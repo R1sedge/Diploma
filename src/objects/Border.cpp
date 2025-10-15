@@ -7,7 +7,7 @@ Border::Border() :
     borderLength(Config::BORDER_LENGTH),
     borderHeight(Config::BORDER_HEIGHT)
 {
-    // Инициализация углов
+    // Инициализация углов границы
     corners = {
         { -1, -1 / Config::BORDER_AR },
         { -1, 1 / Config::BORDER_AR },
@@ -15,7 +15,7 @@ Border::Border() :
         { 1, -1 / Config::BORDER_AR }
     };
 
-    // Нормали
+    // Нормали сторон
     for (int i = 0; i < corners.size() - 1; i++) 
     {
         glm::vec2 n = corners[i + 1] - corners[i];

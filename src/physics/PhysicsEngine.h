@@ -28,6 +28,6 @@ public:
     void createParticles(int count);
 
 private:
-    void checkBorderCollisions(std::vector<Particle>& particles, const Border& border);
+    void applyConstraint(std::vector<Particle>& particles, const Border& border);
     void resolveParticleCollisions(std::vector<Particle>& particles);
 };

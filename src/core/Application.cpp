@@ -95,14 +95,15 @@ void Application::mainLoop() {
     }
 }
 
-void Application::handleInput() {
-    // Вся обработка ввода теперь в InputHandler
-    // Здесь может быть дополнительная логика если нужно
+void Application::handleInput() 
+{
 }
 
-void Application::update(float dt) {
+void Application::update(float dt)  // Базовое dt = 1.0f / 30.0f
+{
     // Обновление физики через PhysicsEngine
     physicsEngine.update(dt);
+
 
     // Поворот границы если есть изменение угла
     float currentDeltaAngle = InputHandler::getDeltaAngle();
@@ -110,6 +111,7 @@ void Application::update(float dt) {
         physicsEngine.rotate(currentDeltaAngle);
         InputHandler::resetDeltaAngle();
     }
+
 
     // Записываем кадр
     serializer.recordFrame(currentFrame, physicsEngine);
