@@ -5,6 +5,8 @@ Application::Application()
     : window(nullptr),
     renderer(),
     physicsEngine(),
+    serializer(),
+    currentFrame(0),
     running(false) {
 }
 
@@ -21,15 +23,12 @@ bool Application::initialize() {
     setupCallbacks();
     renderer.setupProjection();
 
-    // Добавляем начальную частицу как в исходном коде
-    Particle initialParticle(glm::vec2(0, 0));
-    physicsEngine.particleSystem.addParticle(initialParticle);
+    physicsEngine.createParticles(Config::PARTICLES_COUNT);
 
     running = true;
 
     // Начинаем запись
-    serializer.startRecording("../../src/simulation_data.txt", physicsEngine.particleSystem.getParticleCount());
-    currentFrame = 0;
+    //serializer.startRecording("../../src/simulation_data.txt", physicsEngine.particleSystem.getParticleCount());
 
     return true;
 }

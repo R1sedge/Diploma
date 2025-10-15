@@ -11,7 +11,7 @@ public:
     // Пустой генератор
     ParticleSystem();
 
-    void addParticle(const Particle& particle);
+    void addParticle(Particle& particle);
 
     void clearParticles();
 

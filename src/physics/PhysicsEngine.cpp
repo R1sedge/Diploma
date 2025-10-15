@@ -17,6 +17,8 @@ void PhysicsEngine::update(float dt) {
     // Обновляем положение частиц
     particleSystem.applyGravity(dt);
 
+    resolveParticleCollisions(particleSystem.getParticles());
+
     // Проверяем коллизии с границами для каждой частицы
     checkBorderCollisions(particleSystem.getParticles(), border);
 
@@ -82,7 +84,33 @@ void PhysicsEngine::checkBorderCollisions(std::vector<Particle>& particles, cons
     }
 }
 
-void PhysicsEngine::resolveParticleCollisions(std::vector<Particle>& particles) {
-    // Пока оставляем пустым - можно добавить коллизии между частицами позже
-    // Реализация будет аналогична вашей исходной логике
+void PhysicsEngine::resolveParticleCollisions(std::vector<Particle>& particles) 
+{
+    for (int i = 0; i < particles.size(); i++)
+    {
+        for (int j = i + 1; j < particles.size(); j++)
+        {
+            glm::vec2 distVec = particles[i].position - particles[j].position;
+            float dist = glm::length(distVec);
+            distVec = glm::normalize(distVec);
+            float localRadius = border.getLocalRadius();
+            if (dist < localRadius * 2)
+            {
+                particles[i].position += distVec * (localRadius - dist * 0.5f);
+                particles[j].position -= distVec * (localRadius - dist * 0.5f);
+            }
+        }
+    }
+    
+}
+
+void PhysicsEngine::createParticles(int count)
+{
+    for (int i = 0; i < count; i++)
+    {
+        Particle p;
+        p.position = glm::vec2((rand() % 1000 - 500) / 500.f, (rand() % 1000 - 500) / 500.f);
+        particleSystem.addParticle(p);
+
+    }
 }

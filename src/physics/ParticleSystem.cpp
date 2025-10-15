@@ -5,7 +5,7 @@
 ParticleSystem::ParticleSystem() {}
 
 // Добавление частицы
-void ParticleSystem::addParticle(const Particle& particle) {
+void ParticleSystem::addParticle(Particle& particle) {
     particles.push_back(particle);
 }
 

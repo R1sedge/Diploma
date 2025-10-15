@@ -25,6 +25,8 @@ public:
     std::vector<Particle> getParticlesGlobal();
     std::vector<glm::vec2> getBorderCornersGlobal();
 
+    void createParticles(int count);
+
 private:
     void checkBorderCollisions(std::vector<Particle>& particles, const Border& border);
     void resolveParticleCollisions(std::vector<Particle>& particles);

@@ -9,7 +9,7 @@ struct Config {
 
 	// Физика
 	static constexpr glm::vec2 GRAVITY = glm::vec2(0.0f, -9.81f) / 20.0f;
-	static constexpr float PARTICLE_RADIUS = 30.0f;
+	static constexpr float PARTICLE_RADIUS = 10.0f;
 	static constexpr float ELASTICITY = 0.0f;
 
 	// Граница
@@ -17,7 +17,7 @@ struct Config {
 	static constexpr float BORDER_HEIGHT = 400.0f;
 	static constexpr float BORDER_AR = BORDER_LENGTH / BORDER_HEIGHT;
 	static constexpr float BORDER_THICKNESS = 2.0f;
-	static constexpr int BORDER_PARTICLES_COUNT = 1;
+	static constexpr int PARTICLES_COUNT = 2;
 
 	// Рендеринг
 	static constexpr int CIRCLE_RESOLUTION = 20;
