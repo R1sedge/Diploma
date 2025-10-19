@@ -15,8 +15,8 @@ struct Config {
 
 
 	// Граница
-	static constexpr float BORDER_LENGTH = 300.0f;
-	static constexpr float BORDER_HEIGHT = 400.0f;
+	static constexpr float BORDER_LENGTH = 400.0f;
+	static constexpr float BORDER_HEIGHT = 500.0f;
 	static constexpr float BORDER_AR = BORDER_LENGTH / BORDER_HEIGHT;
 	static constexpr float BORDER_THICKNESS = 2.0f;
 	

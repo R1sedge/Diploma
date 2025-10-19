@@ -29,5 +29,5 @@ public:
 
 private:
     void applyConstraint(std::vector<Particle>& particles, const Border& border);
-    void resolveParticleCollisions(std::vector<Particle>& particles);
+    void resolveCollisions(std::vector<Particle>& particles);
 };

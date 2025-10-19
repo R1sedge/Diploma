@@ -17,11 +17,8 @@ void PhysicsEngine::update(float dt) {
     particleSystem.applyGravity(dt);
     particleSystem.update(dt);
 
-
     applyConstraint(particleSystem.getParticles(), border);
-
-    
-    //resolveParticleCollisions(particleSystem.getParticles());
+    resolveCollisions(particleSystem.getParticles());
 }
 
 void PhysicsEngine::rotate(float angle) {
@@ -75,25 +72,29 @@ void PhysicsEngine::applyConstraint(std::vector<Particle>& particles, const Bord
         else if (glm::dot(particle.position - corners[3] - normals[3] * localRadius, normals[3]) <= 0) {
             particle.position -= glm::dot(particle.position - corners[3] - normals[3] * localRadius, normals[3]) * normals[3];
             particle.velocity -= glm::dot(particle.velocity, normals[3]) * normals[3];
-  
         }
     }
 }
 
-void PhysicsEngine::resolveParticleCollisions(std::vector<Particle>& particles) 
+void PhysicsEngine::resolveCollisions(std::vector<Particle>& particles) 
 {
     for (int i = 0; i < particles.size(); i++)
     {
+        Particle& particle1 = particles[i];
         for (int j = i + 1; j < particles.size(); j++)
         {
-            glm::vec2 distVec = particles[i].position - particles[j].position;
+            Particle& particle2 = particles[j];
+            glm::vec2 distVec = particle2.position - particle1.position;
             float dist = glm::length(distVec);
             distVec = glm::normalize(distVec);
-            float localRadius = border.getLocalRadius(particles[i]);
-            if (dist < localRadius * 2)
+            float localRadius1 = border.getLocalRadius(particle1);
+            float localRadius2 = border.getLocalRadius(particle2);
+            float radiusSum = localRadius1 + localRadius2;
+            if (dist < radiusSum)
             {
-                particles[i].position += distVec * (localRadius - dist * 0.5f);
-                particles[j].position -= distVec * (localRadius - dist * 0.5f);
+                particle1.position -= distVec * (localRadius1 - dist * 0.5f);
+                particle2.position += distVec * (localRadius2 - dist * 0.5f);
+
             }
         }
     }
