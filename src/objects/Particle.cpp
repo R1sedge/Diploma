@@ -2,8 +2,9 @@
 
 void Particle::update(float dt)
 {
-	position = position + velocity * dt;
-	velocity = velocity + acceleration * dt;
+	glm::vec2 velocity = position_current - position_old;
+	position_old = position_current;
+	position_current = position_current + velocity + acceleration * dt * dt;
 	acceleration = {0., 0.};
 }
 

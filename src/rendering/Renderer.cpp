@@ -38,7 +38,7 @@ void Renderer::drawParticles(std::vector<Particle>& particlesGlobal)  {
 
     for (const auto& particle : particlesGlobal) {
         //std::cout << particle.position.x << " " << particle.position.y << std::endl;
-        drawCircle(particle.position.x, particle.position.y, particle.radius, Config::CIRCLE_RESOLUTION);
+        drawCircle(particle.position_current.x, particle.position_current.y, particle.radius, Config::CIRCLE_RESOLUTION);
     }
 }
 

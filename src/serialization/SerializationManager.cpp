@@ -63,8 +63,8 @@ void SerializationManager::recordFrame(int frameNumber, PhysicsEngine& physicsEn
 
     // Записываем положения частиц
     for (const auto& particle : physicsEngine.particleSystem.getParticles()) {
-        outputFile << "p " << std::fixed << std::setprecision(6) << particle.position.x
-            << " " << std::fixed << std::setprecision(6) << particle.position.y << std::endl;
+        outputFile << "p " << std::fixed << std::setprecision(6) << particle.position_current.x
+            << " " << std::fixed << std::setprecision(6) << particle.position_current.y << std::endl;
     }
 
     outputFile << std::endl; // Пустая строка между кадрами
