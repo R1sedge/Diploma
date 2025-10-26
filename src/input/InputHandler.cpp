@@ -1,9 +1,11 @@
-#include "InputHandler.h"
+п»ї#include "InputHandler.h"
 #include <cmath>
 #include <algorithm>
+#define M_PI 3.14159265358979323846
 
-// Инициализация статических переменных
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃС‚Р°С‚РёС‡РµСЃРєРёС… РїРµСЂРµРјРµРЅРЅС‹С…
 bool InputHandler::leftMousePressed = false;
+bool InputHandler::firstMoveAfterPress = false;
 float InputHandler::lastAngle = 0.0f;
 float InputHandler::deltaAngle = 0.0f;
 glm::vec2 InputHandler::screenCenter = { 0.0f, 0.0f };
@@ -14,29 +16,45 @@ void InputHandler::initialize(float screenWidth, float screenHeight) {
 }
 
 void InputHandler::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        leftMousePressed = true;
-    }
-    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-        leftMousePressed = false;
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if (action == GLFW_PRESS) {
+            leftMousePressed = true;
+            firstMoveAfterPress = true; // РЎР»РµРґСѓСЋС‰РµРµ РґРІРёР¶РµРЅРёРµ Р±СѓРґРµС‚ РїРµСЂРІС‹Рј РїРѕСЃР»Рµ РЅР°Р¶Р°С‚РёСЏ
+        }
+        else if (action == GLFW_RELEASE) {
+            leftMousePressed = false;
+        }
     }
 }
 
 void InputHandler::cursorPositionCallback(GLFWwindow* window, double xpos, double ypos) {
     if (leftMousePressed) {
-        // Вычисляем вектор от центра к позиции мыши
+        // Р’С‹С‡РёСЃР»СЏРµРј РІРµРєС‚РѕСЂ РѕС‚ С†РµРЅС‚СЂР° Рє РїРѕР·РёС†РёРё РјС‹С€Рё
         float dx = static_cast<float>(xpos) - screenCenter.x;
         float dy = static_cast<float>(ypos) - screenCenter.y;
 
-        // Вычисляем угол в радианах
+        // Р’С‹С‡РёСЃР»СЏРµРј С‚РµРєСѓС‰РёР№ СѓРіРѕР»
         float currentAngle = std::atan2(dy, dx);
-        deltaAngle = currentAngle - lastAngle;
 
-        // Ограничиваем изменение угла (как в исходном коде)
-        deltaAngle = deltaAngle > 0 ?
-            std::min(deltaAngle, 0.1f) :
-            std::max(deltaAngle, -0.1f);
+        if (firstMoveAfterPress) {
+            // РџСЂРё РїРµСЂРІРѕРј РґРІРёР¶РµРЅРёРё РїРѕСЃР»Рµ РЅР°Р¶Р°С‚РёСЏ РЅРµ РІС‹С‡РёСЃР»СЏРµРј РґРµР»СЊС‚Сѓ
+            lastAngle = currentAngle;
+            deltaAngle = 0.0f;
+            firstMoveAfterPress = false;
+        }
+        else {
+            // Р’С‹С‡РёСЃР»СЏРµРј СЂР°Р·РЅРёС†Сѓ СѓРіР»РѕРІ
+            deltaAngle = currentAngle - lastAngle;
 
-        lastAngle = currentAngle;
+            // РљРѕСЂСЂРµРєС‚РёСЂСѓРµРј СЃРєР°С‡РѕРє С‡РµСЂРµР· РіСЂР°РЅРёС†Сѓ -ПЂ/+ПЂ
+            if (deltaAngle > M_PI) {
+                deltaAngle -= 2 * M_PI;
+            }
+            else if (deltaAngle < -M_PI) {
+                deltaAngle += 2 * M_PI;
+            }
+
+            lastAngle = currentAngle;
+        }
     }
 }

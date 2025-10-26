@@ -8,6 +8,7 @@ private:
     static float lastAngle;
     static float deltaAngle;
     static glm::vec2 screenCenter;
+    static bool firstMoveAfterPress;
 
 public:
     static void initialize(float screenWidth, float screenHeight);
