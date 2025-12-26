@@ -8,9 +8,10 @@ struct Config {
 	static constexpr float WINDOW_HEIGHT = 800.0f;
 
 	// Физика
-	static constexpr int PARTICLES_COUNT = 20;
-	static constexpr float PARTICLE_RADIUS = 20.f;
+	static constexpr int PARTICLES_COUNT = 200; // 400 уже тяжеловато
+	static constexpr float PARTICLE_RADIUS = 10.f;
 	static constexpr glm::vec2 GRAVITY = glm::vec2(0.0f, -9.81f) / 20.0f;
+	//static constexpr glm::vec2 GRAVITY = glm::vec2(0.0f, 0.0f);
 	static constexpr float ELASTICITY = 0.0f;
 	static constexpr int sub_steps = 8;
 

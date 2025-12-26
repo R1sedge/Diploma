@@ -15,8 +15,8 @@ PhysicsEngine::PhysicsEngine():
 void PhysicsEngine::update(float dt) {
 
     float sub_dt = dt / Config::sub_steps;
-    for (int i = 0; i < Config::sub_steps; i++) {
-
+    for (int i = 0; i < Config::sub_steps; i++) 
+    {
         particleSystem.applyGravity(sub_dt);
         applyConstraint(particleSystem.getParticles(), border);
         resolveCollisions(particleSystem.getParticles());
@@ -108,7 +108,7 @@ void PhysicsEngine::createParticles(int count)
         Particle p;
         p.position_current = glm::vec2((rand() % 1000 - 500) / 500.f, (rand() % 1000 - 500) / 500.f);
         p.position_old = p.position_current;
-        p.radius = rand() % 20 + 5;
+        p.radius = rand() % 10 + 5;
         particleSystem.addParticle(p);
     }
 }
